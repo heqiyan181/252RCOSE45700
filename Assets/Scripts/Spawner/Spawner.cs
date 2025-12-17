@@ -18,7 +18,6 @@ public class Spawner : MonoBehaviour
     [SerializeField] private int enemyCount = 10;
     [SerializeField] private float delayBtwWaves = 1f;
 
-    // ✅ 修改这里：最后一波 = 10（因为你只有10波）
     [Header("Win Settings")]
     [SerializeField] private int finalWave = 10;
 
@@ -31,7 +30,6 @@ public class Spawner : MonoBehaviour
 
     [Header("Poolers")]
     [SerializeField] private ObjectPooler enemyWave10Pooler;
-    // 如果你删除了其他波数，可以删除或禁用这些引用
     [SerializeField] private ObjectPooler enemyWave11To20Pooler;
 
     private float _spawnTimer;
@@ -66,14 +64,15 @@ public class Spawner : MonoBehaviour
     private void SpawnEnemy()
     {
         ObjectPooler pooler = GetPooler();
-        if (pooler == null) 
-        {
-            // 如果获取不到 pooler，使用默认的
-            pooler = enemyWave10Pooler;
-        }
+        if (pooler == null) pooler = enemyWave10Pooler;
+        if (pooler == null) return;
 
         GameObject newInstance = pooler.GetInstanceFromPool();
+        if (newInstance == null) return;
+
         Enemy enemy = newInstance.GetComponent<Enemy>();
+        if (enemy == null) return;
+
         enemy.Waypoint = _waypoint;
         enemy.ResetEnemy();
 
@@ -84,25 +83,12 @@ public class Spawner : MonoBehaviour
     private float GetSpawnDelay()
     {
         if (spawnMode == SpawnModes.Fixed) return delayBtwSpawns;
-        return GetRandomDelay();
-    }
-
-    private float GetRandomDelay()
-    {
         return Random.Range(minRandomDelay, maxRandomDelay);
     }
 
     private ObjectPooler GetPooler()
     {
-        int currentWave = LevelManager.Instance.CurrentWave;
-
-        // 简化：所有波都用同一个 pooler
         return enemyWave10Pooler;
-        
-        /* 或者保留两波：
-        if (currentWave <= 10) return enemyWave10Pooler;
-        return enemyWave11To20Pooler;
-        */
     }
 
     private IEnumerator NextWave()
@@ -121,26 +107,26 @@ public class Spawner : MonoBehaviour
         if (_levelFinished) return;
 
         _enemiesRamaining--;
-        if (_enemiesRamaining <= 0)
+        if (_enemiesRamaining > 0) return;
+
+        int currentWave = LevelManager.Instance.CurrentWave;
+
+        if (currentWave >= finalWave)
         {
-            int currentWave = LevelManager.Instance.CurrentWave;
+            _levelFinished = true;
 
-            // ✅ 这里：第10波结束就胜利
-            if (currentWave >= finalWave) // finalWave = 10
-            {
-                _levelFinished = true;
+            Time.timeScale = 1f;
+            PlayerPrefs.SetInt("Unlock", 2);
+            PlayerPrefs.Save();
 
-                // 显示胜利画面
-                ShowVictory sv = FindObjectOfType<ShowVictory>();
-                if (sv != null) sv.Show();
+            ShowVictory sv = FindObjectOfType<ShowVictory>();
+            if (sv != null) sv.Show();
 
-                return;
-            }
-
-            // 正常进入下一波
-            OnWaveCompleted?.Invoke();
-            StartCoroutine(NextWave());
+            return;
         }
+
+        OnWaveCompleted?.Invoke();
+        StartCoroutine(NextWave());
     }
 
     private void OnEnable()

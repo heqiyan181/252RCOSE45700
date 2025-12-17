@@ -5,14 +5,11 @@ using UnityEngine.UI;
 public class LevelSelect : MonoBehaviour
 {
     public Button level2Button;
-    public GameObject lockText;
 
     void Start()
     {
         int unlock = PlayerPrefs.GetInt("Unlock", 1);
-
         level2Button.interactable = unlock >= 2;
-        lockText.SetActive(unlock < 2);
     }
 
     public void GoLevel1()
