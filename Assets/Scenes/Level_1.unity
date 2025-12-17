@@ -6237,15 +6237,12 @@ MonoBehaviour:
   spawnMode: 0
   enemyCount: 10
   delayBtwWaves: 1
-  finalWave: 20
+  finalWave: 10
   delayBtwSpawns: 0.5
   minRandomDelay: 1
   maxRandomDelay: 3
   enemyWave10Pooler: {fileID: 1809287173}
   enemyWave11To20Pooler: {fileID: 0}
-  enemyWave21To30Pooler: {fileID: 0}
-  enemyWave31To40Pooler: {fileID: 0}
-  enemyWave41To50Pooler: {fileID: 0}
 --- !u!4 &705719142
 Transform:
   m_ObjectHideFlags: 0
